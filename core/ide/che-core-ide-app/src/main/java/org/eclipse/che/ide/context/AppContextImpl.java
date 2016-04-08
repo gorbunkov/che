@@ -219,6 +219,7 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, WsAg
 
     @Override
     public void onWsAgentStopped(WsAgentStateEvent event) {
+        workspace = null;
         currentProject = null;
         browserQueryFieldRenderer.setProjectName("");
     }
