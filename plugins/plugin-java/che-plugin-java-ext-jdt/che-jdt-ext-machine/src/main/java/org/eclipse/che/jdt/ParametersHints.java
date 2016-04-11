@@ -136,7 +136,7 @@ public class ParametersHints {
         Map<String, String> parametersMap = new LinkedHashMap<>();
 
         for (ILocalVariable parameter : parameters) {
-            parametersMap.put(getParameterType(parameter.getTypeSignature()), parameter.getElementName());
+            parametersMap.put(parameter.getElementName(), getParameterType(parameter.getTypeSignature()));
         }
 
         return getParametersAsString(parametersMap);
@@ -159,8 +159,8 @@ public class ParametersHints {
         int size = parameters.size();
 
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            String type = entry.getKey();
-            String name = entry.getValue();
+            String name = entry.getKey();
+            String type = entry.getValue();
 
             builder.append(type).append(' ').append(name);
 
