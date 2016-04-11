@@ -59,6 +59,9 @@ public class ParametersHintsViewImpl extends PopupPanel implements ParametersHin
             FlowPanel widget = panelsProvider.get();
 
             String parametersLine = parameters.getParameters();
+            if (parametersLine.isEmpty()) {
+                parametersLine = "<no parameters>";
+            }
 
             String result = parametersLine.replace("<", "&lt").replace(">", "&gt");
 
