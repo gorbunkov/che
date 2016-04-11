@@ -38,17 +38,19 @@ import static org.eclipse.jdt.core.IJavaElement.METHOD;
  * The class provides business logic which allows to find hints of method's parameters. Also it finds methods parameter hints in
  * super classes. The class represents founded parameters as ordinary string. Parameters in string separated by coma from each other.
  * Example:
- * class Test{
- *      void x(int x, double y);
- * }
+ * <pre>
+ *      class Test{
+ *          void x(int x, double y);
+ *      }
+ *
+ *      class Test2 extends Test {
+ *          void x(String y);
+ *      }
+ *
+ *      Test2 test2 = new Test2();
+ *      test2.x();
+ * </pre>
  * <p/>
- * class Test2 extends Test {
- *      void x(String y);
- * }
- *
- * Test2 test2 = new Test2();
- * test2.x();
- *
  * When we call method {@link org.eclipse.che.jdt.ParametersHints#findHints(IJavaProject, String, int)} for test2.x()
  * we will get following:
  * ________

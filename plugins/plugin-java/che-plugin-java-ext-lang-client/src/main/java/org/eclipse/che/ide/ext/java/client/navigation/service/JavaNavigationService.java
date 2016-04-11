@@ -103,7 +103,7 @@ public interface JavaNavigationService {
      *         fqn of file
      * @param offset
      *         cursor position in editor
-     * @return map of parameters which method or constructor can accept
+     * @return list of parameters which method or constructor can accept
      */
     Promise<List<MethodParameters>> getMethodParametersHints(String projectPath, String fqn, int offset);
 }
