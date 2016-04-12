@@ -24,8 +24,7 @@ public interface EditorPropertyWidget extends View<EditorPropertyWidget.ActionDe
     /** Returns property value from the property widget */
     JSONValue getValue();
 
-    void setValue(boolean value);
-    void setValue(String value);
+    void setValue(JSONValue value);
 
     /** Returns {@code true} if the given value is correct and {@code false} -  otherwise. */
     boolean isPropertyValueCorrect();
