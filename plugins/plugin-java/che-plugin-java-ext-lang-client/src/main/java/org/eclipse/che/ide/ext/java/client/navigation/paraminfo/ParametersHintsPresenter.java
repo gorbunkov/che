@@ -54,6 +54,11 @@ public class ParametersHintsPresenter {
      */
     public void show(final EmbeddedTextEditorPresenter activeEditor) {
         final int offset = activeEditor.getCursorOffset();
+
+        if (!isCursorInRightPlace(activeEditor, offset)) {
+            return;
+        }
+
         VirtualFile file = activeEditor.getEditorInput().getFile();
 
         String projectPath = file.getProject().getProjectConfig().getPath();
@@ -79,6 +84,18 @@ public class ParametersHintsPresenter {
                 Log.error(getClass(), error.getMessage());
             }
         });
+    }
+
+    private boolean isCursorInRightPlace(EmbeddedTextEditorPresenter activeEditor, int offset) {
+        Document document = activeEditor.getDocument();
+
+        int lineIndex = document.getLineAtOffset(offset);
+        int nextLineIndex = lineIndex + 1;
+
+        int nextLineStart = document.getLineStart(nextLineIndex);
+        String contentRange = activeEditor.getDocument().getContentRange(offset, nextLineStart - offset);
+
+        return contentRange.contains(")");
     }
 
     private int getLineStartOffset(EmbeddedTextEditorPresenter activeEditor, int offset) {
