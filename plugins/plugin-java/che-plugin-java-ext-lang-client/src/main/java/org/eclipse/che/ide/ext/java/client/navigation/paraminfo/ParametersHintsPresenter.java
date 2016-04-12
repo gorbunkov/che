@@ -21,6 +21,7 @@ import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.ext.java.client.navigation.service.JavaNavigationService;
 import org.eclipse.che.ide.ext.java.client.projecttree.JavaSourceFolderUtil;
 import org.eclipse.che.ide.ext.java.shared.dto.model.MethodParameters;
+import org.eclipse.che.ide.jseditor.client.document.Document;
 import org.eclipse.che.ide.jseditor.client.position.PositionConverter;
 import org.eclipse.che.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
 import org.eclipse.che.ide.util.loging.Log;
@@ -58,8 +59,10 @@ public class ParametersHintsPresenter {
         String projectPath = file.getProject().getProjectConfig().getPath();
         String fqn = JavaSourceFolderUtil.getFQNForFile(file);
 
-        Promise<List<MethodParameters>> parametersPromise = navigationService.getMethodParametersHints(projectPath, fqn, offset);
-        parametersPromise.then(new Operation<List<MethodParameters>>() {
+        int lineStartOffset = getLineStartOffset(activeEditor, offset);
+
+        Promise<List<MethodParameters>> promise = navigationService.getMethodParametersHints(projectPath, fqn, offset, lineStartOffset);
+        promise.then(new Operation<List<MethodParameters>>() {
             @Override
             public void apply(List<MethodParameters> parameters) throws OperationException {
                 if (parameters.isEmpty()) {
@@ -76,5 +79,11 @@ public class ParametersHintsPresenter {
                 Log.error(getClass(), error.getMessage());
             }
         });
+    }
+
+    private int getLineStartOffset(EmbeddedTextEditorPresenter activeEditor, int offset) {
+        Document document = activeEditor.getDocument();
+        int lineIndex = document.getLineAtOffset(offset);
+        return document.getLineStart(lineIndex);
     }
 }

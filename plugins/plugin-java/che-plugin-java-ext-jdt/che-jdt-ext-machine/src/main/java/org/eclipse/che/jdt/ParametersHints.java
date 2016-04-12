@@ -28,7 +28,6 @@ import org.eclipse.jdt.core.Signature;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +50,7 @@ import static org.eclipse.jdt.core.IJavaElement.METHOD;
  *      test2.x();
  * </pre>
  * <p/>
- * When we call method {@link org.eclipse.che.jdt.ParametersHints#findHints(IJavaProject, String, int)} for test2.x()
+ * When we call method {@link org.eclipse.che.jdt.ParametersHints#findHints(IJavaProject, String, int, int)} for test2.x()
  * we will get following:
  * ________
  * int x, double y
@@ -63,13 +62,13 @@ import static org.eclipse.jdt.core.IJavaElement.METHOD;
 @Singleton
 public class ParametersHints {
 
-    public List<MethodParameters> findHints(IJavaProject project, String fqn, int offset) throws JavaModelException {
+    public List<MethodParameters> findHints(IJavaProject project, String fqn, int offset, int lineStartOffset) throws JavaModelException {
         IType type = project.findType(fqn);
         if (type.isBinary()) {
             return Collections.emptyList();
         }
 
-        IJavaElement element = getSelectedElement(type, offset);
+        IJavaElement element = getSelectedElement(type, offset, lineStartOffset);
         if (element == null) {
             return Collections.emptyList();
         }
@@ -83,6 +82,26 @@ public class ParametersHints {
         findHintsRecursive(element, parent, result);
 
         return result;
+    }
+
+    private IJavaElement getSelectedElement(IType type, int offset, int lineStartOffset) throws JavaModelException {
+        if (offset <= lineStartOffset) {
+            return null;
+        }
+        ICompilationUnit compilationUnit = type.getCompilationUnit();
+        IJavaElement[] javaElements = compilationUnit.codeSelect(offset, 0);
+
+        if (javaElements.length == 0) {
+            return getSelectedElement(type, --offset, lineStartOffset);
+        }
+
+        IJavaElement element = javaElements[0];
+
+        if (element.getElementType() == METHOD) {
+            return element;
+        }
+
+        return getSelectedElement(type, --offset, lineStartOffset);
     }
 
     private void findHintsRecursive(IJavaElement method, IJavaElement parent, List<MethodParameters> result) throws JavaModelException {
@@ -119,27 +138,24 @@ public class ParametersHints {
         }
     }
 
-    private IJavaElement getSelectedElement(IType type, int offset) throws JavaModelException {
-        ICompilationUnit compilationUnit = type.getCompilationUnit();
-        IJavaElement[] javaElements = compilationUnit.codeSelect(offset, 0);
-
-        if (javaElements.length == 0) {
-            return null;
-        }
-
-        return javaElements[0];
-    }
-
     private String getMethodParametersAsString(IMethod method) throws JavaModelException {
         ILocalVariable[] parameters = method.getParameters();
 
-        Map<String, String> parametersMap = new LinkedHashMap<>();
+        StringBuilder builder = new StringBuilder();
+
+        int paramsLength = parameters.length;
+        int index = 0;
 
         for (ILocalVariable parameter : parameters) {
-            parametersMap.put(parameter.getElementName(), getParameterType(parameter.getTypeSignature()));
+            builder.append(getParameterType(parameter.getTypeSignature())).append(' ').append(parameter.getElementName());
+            index++;
+
+            if (index < paramsLength) {
+                builder.append(", ");
+            }
         }
 
-        return getParametersAsString(parametersMap);
+        return builder.toString();
     }
 
     private String getParameterType(String typeSignature) {
@@ -151,26 +167,5 @@ public class ParametersHints {
         }
 
         return type.replaceAll("[;|*]*", "");
-    }
-
-    private String getParametersAsString(Map<String, String> parameters) {
-        StringBuilder builder = new StringBuilder();
-
-        int size = parameters.size();
-
-        for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            String name = entry.getKey();
-            String type = entry.getValue();
-
-            builder.append(type).append(' ').append(name);
-
-            size--;
-
-            if (size > 0) {
-                builder.append(", ");
-            }
-        }
-
-        return builder.toString();
     }
 }

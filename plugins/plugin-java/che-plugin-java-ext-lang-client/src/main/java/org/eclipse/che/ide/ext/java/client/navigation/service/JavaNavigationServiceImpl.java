@@ -159,9 +159,9 @@ public class JavaNavigationServiceImpl implements JavaNavigationService {
     }
 
     @Override
-    public Promise<List<MethodParameters>> getMethodParametersHints(String projectPath, String fqn, int offset) {
+    public Promise<List<MethodParameters>> getMethodParametersHints(String projectPath, String fqn, int offset, int lineStartOffset) {
         String url = restContext + "/jdt/" + workspaceId + "/navigation/parameters" +
-                     "?projectpath=" + projectPath + "&fqn=" + fqn + "&offset=" + offset;
+                     "?projectpath=" + projectPath + "&fqn=" + fqn + "&offset=" + offset + "&lineStart=" + lineStartOffset;
 
         return requestFactory.createGetRequest(url)
                              .header(ACCEPT, MimeType.APPLICATION_JSON)

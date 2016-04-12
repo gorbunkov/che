@@ -166,10 +166,11 @@ public class JavaNavigationService {
     @Path("parameters")
     public List<MethodParameters> getParameters(@QueryParam("projectpath") String projectPath,
                                                 @QueryParam("fqn") String fqn,
-                                                @QueryParam("offset") int offset) throws JavaModelException {
+                                                @QueryParam("offset") int offset,
+                                                @QueryParam("lineStart") int lineStartOffset) throws JavaModelException {
         IJavaProject project = MODEL.getJavaProject(projectPath);
 
-        return parametersHints.findHints(project, fqn, offset);
+        return parametersHints.findHints(project, fqn, offset, lineStartOffset);
     }
 
 }
