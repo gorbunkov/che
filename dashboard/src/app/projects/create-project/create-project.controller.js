@@ -21,7 +21,7 @@ export class CreateProjectCtrl {
    * Default constructor that is using resource
    * @ngInject for Dependency injection
    */
-  constructor(cheAPI, cheStack, $websocket, $routeParams, $filter, $timeout, $location, $mdDialog, $scope, $rootScope, createProjectSvc, lodash, $q, $log, $document, routeHistory) {
+  constructor(cheAPI, cheStack, $websocket, $routeParams, $filter, $timeout, $location, $mdDialog, $scope, $rootScope, createProjectSvc, lodash, cheNotification, $q, $log, $document, routeHistory) {
     this.$log = $log;
     this.cheAPI = cheAPI;
     this.cheStack = cheStack;
@@ -33,6 +33,7 @@ export class CreateProjectCtrl {
     this.$rootScope = $rootScope;
     this.createProjectSvc = createProjectSvc;
     this.lodash = lodash;
+    this.cheNotification = cheNotification;
     this.$q = $q;
     this.$document = $document;
 
@@ -181,6 +182,9 @@ export class CreateProjectCtrl {
     this.projectName = null;
     this.projectDescription = null;
     this.defaultWorkspaceName = null;
+
+    let currenCreationtstep = this.getCreationSteps()[this.getCurrentProgressStep()];
+    this.isWorkspacesConsuming = currenCreationtstep.hasError && currenCreationtstep.logs.includes('You can stop other workspaces');
   }
 
   /**
@@ -430,11 +434,17 @@ export class CreateProjectCtrl {
 
     let startWorkspacePromise = this.cheAPI.getWorkspace().startWorkspace(workspace.id, workspace.config.defaultEnv);
     startWorkspacePromise.then(() => {}, (error) => {
-      if (error.data.message) {
-        this.getCreationSteps()[this.getCurrentProgressStep()].logs = error.data.message;
+      let errorMessage = 'Unable to start this workspace. ';
+      if (error.data && error.data.message !== null) {
+        errorMessage += error.data.message;
+        this.isWorkspacesConsuming = errorMessage.includes('You can stop other workspaces');
       }
+      this.cheNotification.showError(errorMessage);
+      this.getCreationSteps()[this.getCurrentProgressStep()].logs = errorMessage;
       this.getCreationSteps()[this.getCurrentProgressStep()].hasError = true;
     });
+
+    return  startWorkspacePromise;
   }
 
   createProjectInWorkspace(workspaceId, projectName, projectData, bus, websocketStream, workspaceBus) {
@@ -842,15 +852,17 @@ export class CreateProjectCtrl {
       // Now that the container is started, wait for the extension server. For this, needs to get runtime details
       let promiseWorkspace = this.cheAPI.getWorkspace().fetchWorkspaceDetails(this.workspaceSelected.id);
       promiseWorkspace.then(() => {
-        let websocketUrl = this.cheAPI.getWorkspace().getWebsocketUrl(this.workspaceSelected.id);
-        // Get bus
-        let websocketStream = this.$websocket(websocketUrl);
-        // on success, create project
-        websocketStream.onOpen(() => {
-          let bus = this.cheAPI.getWebsocket().getExistingBus(websocketStream);
-          // mode
-          this.createProjectInWorkspace(this.workspaceSelected.id, this.projectName, this.importProjectData, bus);
-        });
+        let selectedWorkspace = this.cheAPI.getWorkspace().getWorkspaceById(this.workspaceSelected.id);
+        if ('RUNNING' !== selectedWorkspace.status) {
+          this.createProjectSvc.setCurrentProgressStep(2);
+          let bus = this.cheAPI.getWebsocket().getBus(this.workspaceSelected.id);
+          let startWorkspacePromise = this.startWorkspace(bus, selectedWorkspace);
+          startWorkspacePromise.then(() => {
+            this.createProjectFlow();
+          });
+        } else {
+          this.createProjectFlow();
+        }
       }, (error) => {
         if (error.data.message) {
           this.getCreationSteps()[this.getCurrentProgressStep()].logs = error.data.message;
@@ -865,6 +877,18 @@ export class CreateProjectCtrl {
       this.createProjectSvc.showPopup();
       this.$location.path('/projects');
     }
+  }
+
+  createProjectFlow() {
+    let websocketUrl = this.cheAPI.getWorkspace().getWebsocketUrl(this.workspaceSelected.id);
+    // Get bus
+    let websocketStream = this.$websocket(websocketUrl);
+    // on success, create project
+    websocketStream.onOpen(() => {
+      let bus = this.cheAPI.getWebsocket().getExistingBus(websocketStream);
+      // mode
+      this.createProjectInWorkspace(this.workspaceSelected.id, this.projectName, this.importProjectData, bus);
+    });
   }
 
   /**
@@ -972,6 +996,9 @@ export class CreateProjectCtrl {
 
   resetCreateProgress() {
     this.createProjectSvc.resetCreateProgress();
+    if(this.isWorkspacesConsuming){
+      this.$location.path('/workspaces');
+    }
   }
 
   resetCreateNewProject() {
