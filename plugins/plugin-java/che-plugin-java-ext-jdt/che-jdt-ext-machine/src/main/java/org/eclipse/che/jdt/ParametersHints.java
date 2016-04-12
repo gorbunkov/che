@@ -24,12 +24,11 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeHierarchy;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.Signature;
+import org.eclipse.jdt.ui.JavaElementLabels;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static org.eclipse.jdt.core.IJavaElement.METHOD;
 
@@ -141,31 +140,20 @@ public class ParametersHints {
     private String getMethodParametersAsString(IMethod method) throws JavaModelException {
         ILocalVariable[] parameters = method.getParameters();
 
-        StringBuilder builder = new StringBuilder();
-
         int paramsLength = parameters.length;
         int index = 0;
 
+        StringBuffer buffer = new StringBuffer();
+
         for (ILocalVariable parameter : parameters) {
-            builder.append(getParameterType(parameter.getTypeSignature())).append(' ').append(parameter.getElementName());
+            JavaElementLabels.getLocalVariableLabel(parameter, JavaElementLabels.F_PRE_TYPE_SIGNATURE, buffer);
             index++;
 
             if (index < paramsLength) {
-                builder.append(", ");
+                buffer.append(", ");
             }
         }
 
-        return builder.toString();
-    }
-
-    private String getParameterType(String typeSignature) {
-        String type;
-        if (typeSignature.contains("<")) {
-            type = Signature.getSimpleName(typeSignature);
-        } else {
-            type = Signature.getSignatureSimpleName(typeSignature);
-        }
-
-        return type.replaceAll("[;|*]*", "");
+        return buffer.toString();
     }
 }
