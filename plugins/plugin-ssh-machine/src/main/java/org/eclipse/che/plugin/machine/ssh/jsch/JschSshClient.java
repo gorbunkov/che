@@ -240,6 +240,11 @@ public class JschSshClient implements SshClient {
             exec.setCommand(command);
             exec.connect(connectionTimeout);
 
+            try {
+                // workaround exit code -1
+                Thread.sleep(1000);
+            } catch(InterruptedException ignored) {
+            }
             return exec.getExitStatus();
         } finally {
             if (exec != null) {
@@ -258,6 +263,11 @@ public class JschSshClient implements SshClient {
 
                 exec.connect(connectionTimeout);
 
+                try {
+                    // workaround exit code -1
+                    Thread.sleep(1000);
+                } catch(InterruptedException ignored) {
+                }
                 if (exec.getExitStatus() != 0) {
                     throw new MachineException(format("Error code: %s. Error: %s",
                                                       exec.getExitStatus(),
