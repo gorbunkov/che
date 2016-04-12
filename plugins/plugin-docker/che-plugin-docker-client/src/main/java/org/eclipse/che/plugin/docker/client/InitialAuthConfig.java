@@ -11,6 +11,7 @@
 package org.eclipse.che.plugin.docker.client;
 
 import org.apache.commons.codec.binary.Base64;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.commons.json.JsonHelper;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.che.inject.ConfigurationProperties;
@@ -88,12 +89,9 @@ public class InitialAuthConfig {
         }
     }
 
+    @Nullable
     public AuthConfig getInitialAuthConfig() {
-        if (predefinedConfig != null) {
-            return predefinedConfig;
-        } else {
-            return null;
-        }
+        return predefinedConfig;
     }
 
     public AuthConfigs getAuthConfigs() {

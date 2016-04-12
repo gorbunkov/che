@@ -1085,7 +1085,9 @@ public class DockerConnector {
         final List<Pair<String, ?>> headers = new ArrayList<>(3);
         headers.add(Pair.of("Content-Type", MediaType.TEXT_PLAIN));
         headers.add(Pair.of("Content-Length", 0));
-        headers.add(Pair.of("X-Registry-Auth", initialAuthConfig.getAuthConfigHeader()));
+        if (initialAuthConfig.getInitialAuthConfig() != null) {
+            headers.add(Pair.of("X-Registry-Auth", initialAuthConfig.getAuthConfigHeader()));
+        }
 
         try (DockerConnection connection = connectionFactory.openConnection(dockerDaemonUri)
                                                             .method("POST")
