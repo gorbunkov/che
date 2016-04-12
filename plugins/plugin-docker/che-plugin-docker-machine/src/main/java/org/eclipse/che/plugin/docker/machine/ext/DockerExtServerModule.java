@@ -39,6 +39,9 @@ public class DockerExtServerModule extends AbstractModule {
         volumesMultibinder.addBinding()
                           .toProvider(org.eclipse.che.plugin.docker.machine.ext.provider.ExtServerVolumeProvider.class);
 
+        volumesMultibinder.addBinding()
+                          .toProvider(org.eclipse.che.plugin.docker.machine.ext.provider.NginxConfVolumeProvider.class);
+
         Multibinder<String> debMachineEnvVars = Multibinder.newSetBinder(binder(),
                                                                          String.class,
                                                                          Names.named("machine.docker.dev_machine.machine_env"));

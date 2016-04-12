@@ -59,7 +59,7 @@ public class MachineTest {
         Map<String, ServerDto> servers = new HashMap<>();
         servers.put(SOME_TEXT, serverDescriptor);
 
-        machine = new Machine(locale, entityFactory, descriptor);
+        machine = new Machine(locale, entityFactory, descriptor, null);
 
         when(descriptor.getRuntime()).thenReturn(machineRuntimeDto);
         when(descriptor.getConfig()).thenReturn(machineConfig);
@@ -75,7 +75,7 @@ public class MachineTest {
     @Test
     public void defaultActiveTabShouldBeReturned() {
         when(locale.tabInfo()).thenReturn(SOME_TEXT);
-        machine = new Machine(locale, entityFactory, descriptor);
+        machine = new Machine(locale, entityFactory, descriptor, null);
 
         String tabName = machine.getActiveTabName();
 
