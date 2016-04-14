@@ -1,0 +1,28 @@
+[
+  {
+    "name": "cuba-project",
+    "displayName": "cuba-project",
+    "path": "/cuba-project",
+    "description": "A blank CUBA project.",
+    "projectType": "maven",
+    "mixins": [],
+    "attributes": {
+      "language": [
+        "java"
+      ]
+    },
+    "modules": [],
+    "problems": [],
+    "source": {
+      "type": "git",
+      "location": "https://github.com/gorbunkov/che-cuba-project-template",
+      "parameters": {}
+    },
+    "commands": [],
+    "links": [],
+    "category": "Samples",
+    "tags": [
+      "cuba"
+    ]
+  }
+]
